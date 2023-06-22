@@ -1,20 +1,17 @@
-# Import the necessary libraries
 import streamlit as st
 import json
 import csv
 import time
 
-# Use the Streamlit cache to speed up repeated loading of the same file
+# Function to load data from a JSON file
 @st.cache_data
 def load_data_from_file(uploadfile):
-    # Load the JSON data from the file
     data = json.load(uploadfile)
     return data
 
-# Use the Streamlit cache to speed up repeated parsing of the same text
+# Function to load data from pasted JSON text
 @st.cache_data
 def load_data_from_text(json_text):
-    # Load the JSON data from the text
     data = json.loads(json_text)
     return data
 
@@ -25,52 +22,57 @@ def export_to_csv(data, keys, output_file):
         writer.writeheader()
         writer.writerows(data)
 
+# Main function containing the Streamlit application
 def main():
     st.title("JSON to CSV Converter")
 
-    # Let the user choose whether to input a file or text
+    # User selects input type (file or text)
     input_option = st.radio("Select input type", ("File", "Text"))
 
     data = None
 
-    # Handle the file input option
+    # If input type is file, user uploads a JSON file
     if input_option == "File":
         uploaded_file = st.file_uploader("Choose a JSON file", type='json')
         if uploaded_file is not None:
             data = load_data_from_file(uploaded_file)
 
-    # Handle the text input option
+    # If input type is text, user pastes JSON data into a text area
     elif input_option == "Text":
         json_text = st.text_area("Paste JSON data")
         if json_text:
             data = load_data_from_text(json_text)
 
+    # If data is successfully loaded, process it
     if data:
-        # Get the keys from the first item in the data
+        # Extract keys from the JSON data
         keys = set(next(iter(data[0].values())).keys())
+        # Sort the keys alphabetically
+        keys_sorted = sorted(keys)
 
-        # Let the user arrange the keys
+        # User arranges the keys in the desired order
         keys_ordered = (
             st.text_area(
-                "Arrange the keys (one key per line)", "\n".join(keys), height=len(keys)*25
+                "Arrange the keys (one key per line)", "\n".join(keys_sorted), height=len(keys)*25
             )
             .strip()
             .split("\n")
         )
 
-        # Only keep the keys that the user entered
+        # Extract the ordered keys
         selected_keys_ordered = [
             key.strip() for key in keys_ordered if key.strip() in keys
         ]
 
+        # Warn if some keys are missing from the ordered list
         if len(selected_keys_ordered) != len(keys):
             st.warning("Some keys were not found in the ordered list")
 
-        # Create a timestamp for the filename
+        # Create the output filename with a timestamp
         timestampStr = time.strftime("%Y-%m-%d_%H-%M-%S")
         output_file = f"JSONtoCSV_{timestampStr}.csv"
 
-        # Handle the export to CSV button
+        # If user clicks the "Export to CSV" button, export the data
         if st.button("Export to CSV"):
             selected_data = []
             for item in data:
