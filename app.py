@@ -51,18 +51,10 @@ def main():
         keys_sorted = sorted(keys)
 
         # User arranges the keys in the desired order
-        keys_ordered = (
-            st.text_area(
-                "Arrange the keys (one key per line)", "\n".join(keys_sorted), height=len(keys)*25
-            )
-            .strip()
-            .split("\n")
-        )
+        keys_ordered = (st.text_area("Arrange the keys (one key per line)", "\n".join(keys_sorted), height=len(keys)*25).strip().split("\n"))
 
         # Extract the ordered keys
-        selected_keys_ordered = [
-            key.strip() for key in keys_ordered if key.strip() in keys
-        ]
+        selected_keys_ordered = [key.strip() for key in keys_ordered if key.strip() in keys]
 
         # Warn if some keys are missing from the ordered list
         if len(selected_keys_ordered) != len(keys):
